@@ -33,7 +33,20 @@ async function check() {
 
     const client = createClient({ token: user.token, host: user.host }, apiUrl);
     const result = await client.getMe();
-    if (!result.ok || !result.data.needs_confirmation) return;
+    if (!result.ok) return;
+
+    if (!result.data.needs_confirmation) {
+      // The nudge from a previous check must not outlive the thing it was
+      // nudging about, or the user learns to ignore a badge that never
+      // clears (Finding 3). The in-tab confirm flow never touches this
+      // badge, so this per-session check is the only place that can.
+      try {
+        app.updateBadge({ entityId: 'e911', badgeContent: null });
+      } catch {
+        // No badge support on this surface.
+      }
+      return;
+    }
 
     const locale = resolveLocale(context.app?.locale);
     const title = MESSAGES[locale]['app.title'];

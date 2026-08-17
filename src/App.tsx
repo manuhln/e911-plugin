@@ -31,11 +31,15 @@ export default function App({ session }: { session: Session }) {
   // the moment the user checks a hand-edited address instead.
   const [savedInFlight, setSavedInFlight] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  // `background` skips the loading screen: a refresh triggered by something
+  // other than the initial mount (e.g. removing a saved address) must not
+  // unmount whatever the user is currently looking at -- notably the address
+  // form, which would otherwise wipe every field they'd typed (Finding 7).
+  const load = useCallback(async (background = false) => {
+    if (!background) setLoading(true);
     const result = await client.getMe();
     if (result.ok) { setMe(result.data); setFail(null); } else { setFail(result); }
-    setLoading(false);
+    if (!background) setLoading(false);
   }, [client]);
 
   useEffect(() => { void load(); }, [load]);
@@ -90,12 +94,22 @@ export default function App({ session }: { session: Session }) {
     }
     setValidated(null);
     setFail(result);            // back to the form, banner explaining why
+    // A failed commit can still have changed what's provisioned server-side
+    // (e.g. Intrado accepted the new location but attaching a subscriber to
+    // it failed) -- reload so the screen reflects whatever the server now
+    // holds instead of the address from before this attempt (Finding 5).
+    await load();
   }
 
   async function onUseSaved(location: SavedLocation) {
     setBusy(true);
     setSubmitted(location.address);
     setSavedInFlight(location.id);
+    // A label typed for a different (hand-edited) address must never tag
+    // along onto a saved address picked afterwards -- onCommit would send it
+    // as the label to save under, silently overwriting whatever saved entry
+    // already has that name (Finding 2).
+    setPendingLabel('');
     const result = await client.submitLocation({ saved_location_id: location.id, dry_run: true });
     setBusy(false);
     if (result.ok) { setValidated(result); setFail(null); return; }
@@ -109,8 +123,10 @@ export default function App({ session }: { session: Session }) {
     setBusy(false);
     // A saved address is only ever deleted, never edited in place, so a
     // success here can't change what's provisioned -- reload for the fresh
-    // saved_locations list, not to refresh the live address.
-    if (result.ok) { await load(); return; }
+    // saved_locations list, not to refresh the live address. `background`
+    // because this can happen while the address form is open and filled in
+    // (Finding 7): the saved-locations list sits right above the form.
+    if (result.ok) { await load(true); return; }
     setFail(result);
   }
 
@@ -143,10 +159,21 @@ export default function App({ session }: { session: Session }) {
       {screen === 'loading' && <p><FormattedMessage id="app.loading" /></p>}
 
       {screen === 'unavailable' && (
-        <Message
-          messageKey={fail ? messageKeyFor(fail) : 'error.unknown'}
-          severity={fail ? severityFor(fail) : 'error'}
-        />
+        <section className="e911-card">
+          <Message
+            messageKey={fail ? messageKeyFor(fail) : 'error.unknown'}
+            severity={fail ? severityFor(fail) : 'error'}
+          />
+          {/* This tab runs inside desktop and mobile hosts, where "reload
+              the app" (the copy above) usually isn't something the user can
+              do -- and a flaky connection is exactly when they'd land here
+              (Finding 4). */}
+          <div className="e911-actions">
+            <button type="button" onClick={() => void load()}>
+              <FormattedMessage id="action.retry" />
+            </button>
+          </div>
+        </section>
       )}
 
       {screen === 'no_identity' && (
