@@ -10,13 +10,8 @@ provisioning), from a small React + TypeScript frontend.
 npm install
 npm run dev      # local dev server (Vite)
 npm run build    # type-check with tsc, then bundle with vite -> dist/
-npm test         # node --test over src/logic/*.test.ts and src/api/*.test.ts
+npm test         # node --test over src/**/*.test.ts
 ```
-
-`dist/` is what gets deployed and served at `e911-plugin.voxsun.net`. It
-contains the built `app.html` / `app.js` (the UI) and `background.js` (the
-Wazo plugin background script), at fixed filenames so the plugin manifest can
-point at stable URLs.
 
 ## Configuration
 
@@ -24,10 +19,6 @@ Copy `.env.example` to `.env` and set:
 
 - `VITE_API_URL` — base URL of the intranet E911 API, no trailing slash.
 
-`.env` is gitignored; it holds a value specific to each deployment.
-
-## Backend requirement
-
-The intranet backend enforces `e911.plugin_origin`: it must match this
-plugin's deployed origin (`https://e911-plugin.voxsun.net`) exactly, or every
-request from this frontend returns `503`.
+Vite inlines `VITE_*` variables into the bundle at **build** time, not at
+runtime, so `.env` must be in place before `npm run build` runs. `.env` is
+gitignored; it holds a value specific to each deployment.
