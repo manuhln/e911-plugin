@@ -3,12 +3,13 @@ import { FormattedMessage, useIntl } from 'react-intl';
 
 import { createClient, type E911Client } from './api/client.ts';
 import type {
-  ApiFail, ApiResult, Civic, LocationResponse, MeResponse, Session,
+  ApiFail, ApiResult, Civic, LocationResponse, MeResponse, SavedLocation, Session, SubmitPayload,
 } from './api/types.ts';
 import { messageKeyFor, selectScreen, severityFor } from './screen.ts';
 import Message from './components/Message.tsx';
 import AddressForm from './components/AddressForm.tsx';
 import ValidationResult from './components/ValidationResult.tsx';
+import SavedLocations from './components/SavedLocations.tsx';
 
 export default function App({ session }: { session: Session }) {
   const intl = useIntl();
@@ -24,6 +25,11 @@ export default function App({ session }: { session: Session }) {
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState<Civic | null>(null);
   const [pendingLabel, setPendingLabel] = useState('');
+  // Set when the pending check came from "Use" on a saved address, so
+  // onCommit can send saved_location_id instead of expanded fields -- the
+  // dry run and the commit must agree on what is being provisioned. Cleared
+  // the moment the user checks a hand-edited address instead.
+  const [savedInFlight, setSavedInFlight] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -56,6 +62,7 @@ export default function App({ session }: { session: Session }) {
     setBusy(true);
     setSubmitted(civic);
     setPendingLabel(label);
+    setSavedInFlight(null);     // hand-edited fields, not a saved shortcut
     const result = await client.submitLocation({ ...civic, label, dry_run: true });
     setBusy(false);
     if (result.ok) { setValidated(result); setFail(null); return; }
@@ -65,17 +72,46 @@ export default function App({ session }: { session: Session }) {
 
   async function onCommit(civic: Civic) {
     setBusy(true);
-    const result = await client.submitLocation({ ...civic, label: pendingLabel, dry_run: false });
+    // Same source as the dry run that produced this screen: a saved id, or
+    // the expanded fields. Never both, so the two steps can't disagree about
+    // what is being provisioned.
+    const payload: SubmitPayload = savedInFlight !== null
+      ? { saved_location_id: savedInFlight, label: pendingLabel, dry_run: false }
+      : { ...civic, label: pendingLabel, dry_run: false };
+    const result = await client.submitLocation(payload);
     setBusy(false);
     if (result.ok) {
       setFinished(result.data);
       setValidated(null);
       setEditing(false);
       setFail(null);
+      setSavedInFlight(null);
       return;
     }
     setValidated(null);
     setFail(result);            // back to the form, banner explaining why
+  }
+
+  async function onUseSaved(location: SavedLocation) {
+    setBusy(true);
+    setSubmitted(location.address);
+    setSavedInFlight(location.id);
+    const result = await client.submitLocation({ saved_location_id: location.id, dry_run: true });
+    setBusy(false);
+    if (result.ok) { setValidated(result); setFail(null); return; }
+    setValidated(null);
+    setFail(result);
+  }
+
+  async function onRemoveSaved(location: SavedLocation) {
+    setBusy(true);
+    const result = await client.deleteSavedLocation(location.id);
+    setBusy(false);
+    // A saved address is only ever deleted, never edited in place, so a
+    // success here can't change what's provisioned -- reload for the fresh
+    // saved_locations list, not to refresh the live address.
+    if (result.ok) { await load(); return; }
+    setFail(result);
   }
 
   function onDone() {
@@ -83,6 +119,7 @@ export default function App({ session }: { session: Session }) {
     setSubmitted(null);
     setPendingLabel('');
     setEditing(false);
+    setSavedInFlight(null);
     void load();
   }
 
@@ -117,6 +154,15 @@ export default function App({ session }: { session: Session }) {
           <h2><FormattedMessage id="noIdentity.title" /></h2>
           <p><FormattedMessage id="noIdentity.body" /></p>
         </section>
+      )}
+
+      {(screen === 'needs_confirmation' || screen === 'form') && !!me?.saved_locations.length && (
+        <SavedLocations
+          locations={me.saved_locations}
+          busy={busy}
+          onUse={(location) => void onUseSaved(location)}
+          onRemove={(location) => void onRemoveSaved(location)}
+        />
       )}
 
       {screen === 'needs_confirmation' && (
@@ -199,7 +245,6 @@ export default function App({ session }: { session: Session }) {
         </section>
       )}
 
-      {/* Task 6 adds: saved addresses. */}
     </main>
   );
 }

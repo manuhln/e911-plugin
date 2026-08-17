@@ -152,3 +152,36 @@ button:focus-visible, input:focus-visible {
   color: var(--e911-muted);
   margin: 0 0 .25rem;
 }
+
+.e911-saved {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.e911-saved li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .75rem;
+  align-items: baseline;
+  padding: .5rem;
+  border: 1px solid var(--e911-line);
+  border-radius: var(--e911-radius);
+}
+
+.e911-saved__label {
+  font-weight: 600;
+}
+
+/* Kept out of .e911-actions and pushed to the far edge of the row (or its own
+   line, once it wraps) so it never sits thumb-slip-close to "Use". */
+.e911-saved__remove {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: var(--e911-danger);
+  text-decoration: underline;
+}
