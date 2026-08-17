@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { messageKeyFor, selectScreen, severityFor } from './screen.ts';
+import { isAddressProvisioned, messageKeyFor, selectScreen, severityFor } from './screen.ts';
 import type { ApiFail } from './api/types.ts';
 
 const base = {
@@ -128,4 +128,11 @@ test('severity: an unapplied move is an error, a rejected form is a warning', ()
   assert.equal(severityFor({ ok: false, status: 409, blockedByMode: true }), 'warning');
   assert.equal(severityFor({ ok: false, status: 400, missing: ['street'] }), 'warning');
   assert.equal(severityFor({ ok: false, status: 422 }), 'warning');
+});
+
+test('isAddressProvisioned is true only for a status of exactly "provisioned"', () => {
+  assert.equal(isAddressProvisioned('provisioned'), true);
+  assert.equal(isAddressProvisioned('validate_only'), false);
+  assert.equal(isAddressProvisioned('error'), false);
+  assert.equal(isAddressProvisioned(null), false);
 });

@@ -5,7 +5,7 @@ import { createClient, type E911Client } from './api/client.ts';
 import type {
   ApiFail, ApiResult, Civic, LocationResponse, MeResponse, SavedLocation, Session, SubmitPayload,
 } from './api/types.ts';
-import { messageKeyFor, selectScreen, severityFor } from './screen.ts';
+import { isAddressProvisioned, messageKeyFor, selectScreen, severityFor } from './screen.ts';
 import Message from './components/Message.tsx';
 import AddressForm from './components/AddressForm.tsx';
 import ValidationResult from './components/ValidationResult.tsx';
@@ -170,6 +170,9 @@ export default function App({ session }: { session: Session }) {
           <h2><FormattedMessage id="status.movedTitle" /></h2>
           <p><FormattedMessage id="status.movedBody" /></p>
           {me?.address ? addressLines(me.address) : null}
+          {me && !isAddressProvisioned(me.status) && (
+            <p><FormattedMessage id="status.notYetActive" /></p>
+          )}
           <div className="e911-actions">
             <button type="button" disabled={busy} onClick={() => void onStillHere()}>
               <FormattedMessage id="status.stillHere" />
@@ -187,7 +190,11 @@ export default function App({ session }: { session: Session }) {
             <FormattedMessage id="app.forWhom" values={{ label: me.identity.label }} />
           </p>
           {addressLines(me.address)}
-          <p><FormattedMessage id="status.confirmed" /></p>
+          <p>
+            <FormattedMessage
+              id={isAddressProvisioned(me.status) ? 'status.confirmed' : 'status.notYetActive'}
+            />
+          </p>
           <p className="e911-muted">
             {me.last_confirmed_at
               ? intl.formatMessage({ id: 'app.lastConfirmed' }, {

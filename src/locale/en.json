@@ -5,6 +5,7 @@
   "app.lastConfirmed": "Last confirmed {date}",
   "app.neverConfirmed": "Not yet confirmed",
   "status.confirmed": "This is the address emergency services will be given if you dial 911.",
+  "status.notYetActive": "This address is recorded but not yet active with emergency services. An administrator needs to complete activation before it will be used if you dial 911.",
   "status.movedTitle": "Did you move?",
   "status.movedBody": "You appear to be connecting from somewhere new. Confirm your 911 address so emergency services reach the right place.",
   "status.stillHere": "I'm still here",

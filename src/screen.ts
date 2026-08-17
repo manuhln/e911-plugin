@@ -92,3 +92,14 @@ export function severityFor(fail: ApiFail): Severity {
   if (fail.status === 409 && fail.blockedByMode) return 'warning';
   return 'error';
 }
+
+/**
+ * `me.address` being non-null only means a civic is on file -- the backend
+ * writes that row under a non-"provisioned" status both while Intrado is in
+ * validate_only mode and when a post-write step (subscriber attach) fails.
+ * Neither case has reached Intrado, so the "this is what 911 will see"
+ * copy must be gated on this, not on `address` alone.
+ */
+export function isAddressProvisioned(status: string | null): boolean {
+  return status === 'provisioned';
+}
