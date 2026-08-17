@@ -1,0 +1,120 @@
+import { useCallback, useEffect, useState } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+
+import { createClient, type E911Client } from './api/client.ts';
+import type {
+  ApiFail, ApiResult, Civic, LocationResponse, MeResponse, Session,
+} from './api/types.ts';
+import { messageKeyFor, selectScreen, severityFor } from './screen.ts';
+import Message from './components/Message.tsx';
+
+export default function App({ session }: { session: Session }) {
+  const intl = useIntl();
+  const [client] = useState<E911Client>(() =>
+    createClient(session, import.meta.env.VITE_API_URL ?? ''));
+
+  const [loading, setLoading] = useState(true);
+  const [me, setMe] = useState<MeResponse | null>(null);
+  const [fail, setFail] = useState<ApiFail | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [validated, setValidated] = useState<ApiResult<LocationResponse> | null>(null);
+  const [finished, setFinished] = useState<LocationResponse | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [submitted, setSubmitted] = useState<Civic | null>(null);
+  const [pendingLabel, setPendingLabel] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const result = await client.getMe();
+    if (result.ok) { setMe(result.data); setFail(null); } else { setFail(result); }
+    setLoading(false);
+  }, [client]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const screen = selectScreen({
+    loading, me, fail, editing, validated, finished: finished !== null,
+  });
+
+  async function onStillHere() {
+    setBusy(true);
+    const result = await client.confirm();
+    setBusy(false);
+    if (result.ok) { await load(); return; }
+    setFail(result);
+  }
+
+  const addressLines = (civic: Civic) => (
+    <address className="e911-address">
+      {[civic.house_number, civic.street].filter(Boolean).join(' ')}<br />
+      {civic.suite ? <>{civic.suite}<br /></> : null}
+      {civic.city}, {civic.state} {civic.postal_code}<br />
+      {civic.country}
+    </address>
+  );
+
+  return (
+    <main className="e911">
+      <h1 className="e911-title"><FormattedMessage id="app.title" /></h1>
+
+      {fail && screen !== 'no_identity' && screen !== 'unavailable' && (
+        <Message messageKey={messageKeyFor(fail)} severity={severityFor(fail)} />
+      )}
+
+      {screen === 'loading' && <p><FormattedMessage id="app.loading" /></p>}
+
+      {screen === 'unavailable' && (
+        <Message
+          messageKey={fail ? messageKeyFor(fail) : 'error.unknown'}
+          severity={fail ? severityFor(fail) : 'error'}
+        />
+      )}
+
+      {screen === 'no_identity' && (
+        <section className="e911-card">
+          <h2><FormattedMessage id="noIdentity.title" /></h2>
+          <p><FormattedMessage id="noIdentity.body" /></p>
+        </section>
+      )}
+
+      {screen === 'needs_confirmation' && (
+        <section className="e911-card e911-card--warn">
+          <h2><FormattedMessage id="status.movedTitle" /></h2>
+          <p><FormattedMessage id="status.movedBody" /></p>
+          {me?.address ? addressLines(me.address) : null}
+          <div className="e911-actions">
+            <button type="button" disabled={busy} onClick={() => void onStillHere()}>
+              <FormattedMessage id="status.stillHere" />
+            </button>
+            <button type="button" disabled={busy} onClick={() => setEditing(true)}>
+              <FormattedMessage id="status.iMoved" />
+            </button>
+          </div>
+        </section>
+      )}
+
+      {screen === 'confirmed' && me?.address && (
+        <section className="e911-card">
+          <p className="e911-muted">
+            <FormattedMessage id="app.forWhom" values={{ label: me.identity.label }} />
+          </p>
+          {addressLines(me.address)}
+          <p><FormattedMessage id="status.confirmed" /></p>
+          <p className="e911-muted">
+            {me.last_confirmed_at
+              ? intl.formatMessage({ id: 'app.lastConfirmed' }, {
+                  date: intl.formatDate(me.last_confirmed_at, { dateStyle: 'medium' }) })
+              : intl.formatMessage({ id: 'app.neverConfirmed' })}
+          </p>
+          <div className="e911-actions">
+            <button type="button" onClick={() => setEditing(true)}>
+              <FormattedMessage id="status.change" />
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* Task 5 adds: form, validated, done. Task 6 adds: saved addresses. */}
+    </main>
+  );
+}
