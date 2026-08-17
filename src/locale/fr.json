@@ -38,6 +38,7 @@
   "saved.remove": "Supprimer",
   "noIdentity.title": "Pas encore configuré",
   "noIdentity.body": "Votre compte n'est pas configuré pour la gestion autonome du 911. Contactez votre administrateur.",
+  "error.startup": "Impossible de démarrer. Rechargez la page.",
   "error.offline": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
   "error.session": "Votre session n'a pas pu être vérifiée. Rechargez l'application.",
   "error.unconfigured": "La gestion autonome du 911 n'est pas encore activée. Contactez votre administrateur.",
