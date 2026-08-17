@@ -11,6 +11,17 @@ interface Props {
   onEdit: () => void;
 }
 
+function AddressBlock({ civic }: { civic: Civic }) {
+  return (
+    <address className="e911-address">
+      {[civic.house_number, civic.street].filter(Boolean).join(' ')}<br />
+      {civic.suite ? <>{civic.suite}<br /></> : null}
+      {civic.city}, {civic.state} {civic.postal_code}<br />
+      {civic.country}
+    </address>
+  );
+}
+
 export default function ValidationResult({ data, submitted, busy, onUse, onEdit }: Props) {
   const corrected = data.corrected ?? null;
   const chosen = corrected ?? submitted;
@@ -18,13 +29,23 @@ export default function ValidationResult({ data, submitted, busy, onUse, onEdit 
   return (
     <section className="e911-card">
       <h2><FormattedMessage id="validated.title" /></h2>
-      {corrected ? <p><FormattedMessage id="validated.correctedIntro" /></p> : null}
-      <address className="e911-address">
-        {[chosen.house_number, chosen.street].filter(Boolean).join(' ')}<br />
-        {chosen.suite ? <>{chosen.suite}<br /></> : null}
-        {chosen.city}, {chosen.state} {chosen.postal_code}<br />
-        {chosen.country}
-      </address>
+      {corrected ? (
+        <>
+          <p><FormattedMessage id="validated.correctedIntro" /></p>
+          <div className="e911-compare">
+            <div>
+              <p className="e911-compare-label"><FormattedMessage id="validated.providerEntry" /></p>
+              <AddressBlock civic={corrected} />
+            </div>
+            <div>
+              <p className="e911-compare-label"><FormattedMessage id="validated.yourEntry" /></p>
+              <AddressBlock civic={submitted} />
+            </div>
+          </div>
+        </>
+      ) : (
+        <AddressBlock civic={chosen} />
+      )}
       <div className="e911-actions">
         <button type="button" disabled={busy} onClick={() => onUse(chosen)}>
           <FormattedMessage id={corrected ? 'validated.useCorrected' : 'validated.confirm'} />

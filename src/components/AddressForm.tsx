@@ -44,6 +44,7 @@ export default function AddressForm({ initial, busy, onCheck, onCancel }: Props)
 
   const field = (key: keyof Civic, labelId: string, hintId?: string) => {
     const invalid = REQUIRED.includes(key) && !civic[key].trim();
+    const hintElementId = hintId ? 'e911-hint-' + key : undefined;
     return (
       <div className="e911-field" key={key}>
         <label htmlFor={'e911-' + key}><FormattedMessage id={labelId} /></label>
@@ -54,8 +55,9 @@ export default function AddressForm({ initial, busy, onCheck, onCancel }: Props)
           autoComplete={AUTOCOMPLETE[key]}
           required={REQUIRED.includes(key)}
           aria-invalid={invalid || undefined}
+          aria-describedby={hintElementId}
         />
-        {hintId ? <span className="e911-hint"><FormattedMessage id={hintId} /></span> : null}
+        {hintId ? <span className="e911-hint" id={hintElementId}><FormattedMessage id={hintId} /></span> : null}
       </div>
     );
   };

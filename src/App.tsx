@@ -38,6 +38,12 @@ export default function App({ session }: { session: Session }) {
     loading, me, fail, editing, validated, finished: finished !== null,
   });
 
+  // The provider's own spelling on a 422 rejection -- offered as a one-click
+  // fill-in on the form, never auto-applied. `alternatives` stays unrendered:
+  // its shape (dict for one, list for several) has never been observed from
+  // this backend, so building UI against it would be a guess.
+  const suggested = fail?.corrected ?? null;
+
   async function onStillHere() {
     setBusy(true);
     const result = await client.confirm();
@@ -151,12 +157,26 @@ export default function App({ session }: { session: Session }) {
       )}
 
       {screen === 'form' && (
-        <AddressForm
-          initial={submitted ?? me?.address ?? null}
-          busy={busy}
-          onCheck={onCheck}
-          onCancel={me?.address ? () => { setEditing(false); setFail(null); } : null}
-        />
+        <>
+          {suggested && (
+            <section className="e911-card e911-card--warn">
+              <h2><FormattedMessage id="form.suggestedTitle" /></h2>
+              {addressLines(suggested)}
+              <div className="e911-actions">
+                <button type="button" onClick={() => { setSubmitted(suggested); setFail(null); }}>
+                  <FormattedMessage id="validated.useCorrected" />
+                </button>
+              </div>
+            </section>
+          )}
+          <AddressForm
+            key={JSON.stringify(submitted ?? me?.address ?? null)}
+            initial={submitted ?? me?.address ?? null}
+            busy={busy}
+            onCheck={onCheck}
+            onCancel={me?.address ? () => { setEditing(false); setFail(null); } : null}
+          />
+        </>
       )}
 
       {screen === 'validated' && validated?.ok && submitted && (
