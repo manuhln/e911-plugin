@@ -1,0 +1,34 @@
+{
+  "manifestVersion": "0.1",
+  "version": "0.1.0",
+  "id": "voxsun-e911-id",
+  "packageName": "com.voxsun.www.e911",
+  "productType": "mobile",
+  "name": { "short": "911", "full": "911 Address" },
+  "description": {
+    "short": "Keep your 911 address up to date.",
+    "full": "Shows the civic address emergency services will be given if you dial 911 from this phone, and lets you correct it when you move."
+  },
+  "icons": {
+    "color": "https://e911-plugin.voxsun.net/plugin-icon.svg",
+    "outline": "https://e911-plugin.voxsun.net/plugin-icon.svg"
+  },
+  "requirements": { "minStackVersion": "24.01" },
+  "developer": { "name": "Voxsun" },
+  "localizationInfo": {
+    "defaultLanguageTag": "en",
+    "additionalLanguages": [
+      { "languageTag": "fr", "file": "https://e911-plugin.voxsun.net/manifest-fr.json" }
+    ]
+  },
+  "staticTabs": [
+    {
+      "entityId": "e911",
+      "context": ["mobileTab"],
+      "name": "911 Address",
+      "contentUrl": "https://e911-plugin.voxsun.net/app.html",
+      "mobileIcon": "location-outline"
+    }
+  ],
+  "backgroundScript": "https://e911-plugin.voxsun.net/background.js"
+}
