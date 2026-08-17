@@ -28,9 +28,26 @@ export function selectScreen(state: ScreenInput): Screen {
   if (state.finished) return 'done';
 
   const fail = state.fail;
-  if (fail && !state.editing) {
-    if (fail.status === 409 && fail.reason === 'no_identity') return 'no_identity';
-    if (fail.status === 401 || fail.status === 503 || fail.status === 0) return 'unavailable';
+  if (fail) {
+    // no_address means nothing is on file to confirm; the form is where
+    // that gets resolved, whether or not the user was already editing.
+    if (fail.status === 409 && fail.reason === 'no_address') return 'form';
+
+    // These are recoverable from the form itself: a rejected submission
+    // (400/422) or provisioning switched off (409 blockedByMode). Every
+    // other failure means we cannot serve this user at all, and that
+    // outranks 'editing' too -- a session that expires or a backend that
+    // goes unconfigured mid-edit must not be swallowed into a form that
+    // can never submit.
+    const recoverableFromForm =
+      fail.status === 400 ||
+      fail.status === 422 ||
+      (fail.status === 409 && fail.blockedByMode);
+
+    if (!recoverableFromForm) {
+      if (fail.status === 409 && fail.reason === 'no_identity') return 'no_identity';
+      if (fail.status === 401 || fail.status === 503 || fail.status === 0) return 'unavailable';
+    }
   }
 
   if (state.validated) return 'validated';

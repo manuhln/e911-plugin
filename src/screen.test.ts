@@ -63,6 +63,32 @@ test('finished outranks everything except loading', () => {
   assert.equal(selectScreen({ ...base, loading: true, finished: true }), 'loading');
 });
 
+test('a terminal failure reaches its screen even mid-edit, not swallowed into the form', () => {
+  for (const status of [401, 503, 0]) {
+    assert.equal(
+      selectScreen({ ...base, me: me(), editing: true, fail: { ok: false, status } }),
+      'unavailable');
+  }
+  assert.equal(
+    selectScreen({
+      ...base, me: me(), editing: true,
+      fail: { ok: false, status: 409, reason: 'no_identity' },
+    }),
+    'no_identity');
+});
+
+test('409 no_address routes to the form, not a stale confirmed view', () => {
+  assert.equal(
+    selectScreen({ ...base, me: me(), fail: { ok: false, status: 409, reason: 'no_address' } }),
+    'form');
+  assert.equal(
+    selectScreen({
+      ...base, me: me(), editing: true,
+      fail: { ok: false, status: 409, reason: 'no_address' },
+    }),
+    'form');
+});
+
 test('a submit failure keeps the user on the form rather than blanking the page', () => {
   assert.equal(
     selectScreen({ ...base, me: me(), editing: true, fail: { ok: false, status: 422 } }),
