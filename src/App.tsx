@@ -7,6 +7,8 @@ import type {
 } from './api/types.ts';
 import { messageKeyFor, selectScreen, severityFor } from './screen.ts';
 import Message from './components/Message.tsx';
+import AddressForm from './components/AddressForm.tsx';
+import ValidationResult from './components/ValidationResult.tsx';
 
 export default function App({ session }: { session: Session }) {
   const intl = useIntl();
@@ -42,6 +44,40 @@ export default function App({ session }: { session: Session }) {
     setBusy(false);
     if (result.ok) { await load(); return; }
     setFail(result);
+  }
+
+  async function onCheck(civic: Civic, label: string) {
+    setBusy(true);
+    setSubmitted(civic);
+    setPendingLabel(label);
+    const result = await client.submitLocation({ ...civic, label, dry_run: true });
+    setBusy(false);
+    if (result.ok) { setValidated(result); setFail(null); return; }
+    setValidated(null);
+    setFail(result);            // selectScreen keeps the user on the form
+  }
+
+  async function onCommit(civic: Civic) {
+    setBusy(true);
+    const result = await client.submitLocation({ ...civic, label: pendingLabel, dry_run: false });
+    setBusy(false);
+    if (result.ok) {
+      setFinished(result.data);
+      setValidated(null);
+      setEditing(false);
+      setFail(null);
+      return;
+    }
+    setValidated(null);
+    setFail(result);            // back to the form, banner explaining why
+  }
+
+  function onDone() {
+    setFinished(null);
+    setSubmitted(null);
+    setPendingLabel('');
+    setEditing(false);
+    void load();
   }
 
   const addressLines = (civic: Civic) => (
@@ -114,7 +150,36 @@ export default function App({ session }: { session: Session }) {
         </section>
       )}
 
-      {/* Task 5 adds: form, validated, done. Task 6 adds: saved addresses. */}
+      {screen === 'form' && (
+        <AddressForm
+          initial={submitted ?? me?.address ?? null}
+          busy={busy}
+          onCheck={onCheck}
+          onCancel={me?.address ? () => { setEditing(false); setFail(null); } : null}
+        />
+      )}
+
+      {screen === 'validated' && validated?.ok && submitted && (
+        <ValidationResult
+          data={validated.data}
+          submitted={submitted}
+          busy={busy}
+          onUse={(civic) => void onCommit(civic)}
+          onEdit={() => { setValidated(null); setEditing(true); }}
+        />
+      )}
+
+      {screen === 'done' && finished && (
+        <section className="e911-card">
+          <h2><FormattedMessage id="done.title" /></h2>
+          <p><FormattedMessage id={finished.unchanged ? 'done.unchanged' : 'done.body'} /></p>
+          <div className="e911-actions">
+            <button type="button" onClick={onDone}><FormattedMessage id="done.back" /></button>
+          </div>
+        </section>
+      )}
+
+      {/* Task 6 adds: saved addresses. */}
     </main>
   );
 }

@@ -112,3 +112,30 @@ button:focus-visible, input:focus-visible {
   outline: 2px solid var(--e911-accent);
   outline-offset: 2px;
 }
+
+.e911-field {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.e911-field label {
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.e911-field input {
+  min-height: 44px;
+  padding: .5rem .6rem;
+  border: 1px solid var(--e911-line);
+  border-radius: var(--e911-radius);
+  font-size: 1rem;
+  width: 100%;
+  background: var(--e911-bg);
+  color: var(--e911-fg);
+}
+
+.e911-hint {
+  font-size: .85rem;
+  color: var(--e911-muted);
+}
