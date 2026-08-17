@@ -1,34 +1,9 @@
 {
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.5/MicrosoftTeams.Localization.schema.json",
   "manifestVersion": "0.1",
-  "version": "0.1.0",
-  "id": "voxsun-e911-id",
-  "packageName": "com.voxsun.www.e911",
-  "productType": "mobile",
-  "name": { "short": "911", "full": "Adresse 911" },
-  "description": {
-    "short": "Gardez votre adresse 911 à jour.",
-    "full": "Affiche l'adresse civique communiquée aux services d'urgence si vous composez le 911 depuis ce téléphone, et vous permet de la corriger en cas de déménagement."
-  },
-  "icons": {
-    "color": "https://e911-plugin.voxsun.net/plugin-icon.svg",
-    "outline": "https://e911-plugin.voxsun.net/plugin-icon.svg"
-  },
-  "requirements": { "minStackVersion": "24.01" },
-  "developer": { "name": "Voxsun" },
-  "localizationInfo": {
-    "defaultLanguageTag": "fr",
-    "additionalLanguages": [
-      { "languageTag": "fr", "file": "https://e911-plugin.voxsun.net/manifest-fr.json" }
-    ]
-  },
-  "staticTabs": [
-    {
-      "entityId": "e911",
-      "context": ["mobileTab"],
-      "name": "Adresse 911",
-      "contentUrl": "https://e911-plugin.voxsun.net/app.html",
-      "mobileIcon": "location-outline"
-    }
-  ],
-  "backgroundScript": "https://e911-plugin.voxsun.net/background.js"
+  "name.short": "911",
+  "name.full": "Adresse 911",
+  "description.short": "Gardez votre adresse 911 à jour.",
+  "description.full": "Affiche l'adresse civique communiquée aux services d'urgence si vous composez le 911 depuis ce téléphone, et vous permet de la corriger en cas de déménagement.",
+  "staticTabs[0].name": "Adresse 911"
 }

@@ -43,17 +43,20 @@ looking at tokens or CORS.
 ### Installing the plugin
 
 A tenant admin installs this plugin in Wazo by manifest URL, one per
-surface and language:
+surface — French is picked up automatically, not installed separately:
 
-| Surface           | Language | Manifest URL |
-|-------------------|----------|--------------|
-| Desktop / web app | English  | `https://e911-plugin.voxsun.net/manifest.json` |
-| Desktop / web app | French   | `https://e911-plugin.voxsun.net/manifest-fr.json` |
-| Mobile            | English  | `https://e911-plugin.voxsun.net/manifest-mobile.json` |
-| Mobile            | French   | `https://e911-plugin.voxsun.net/manifest-mobile-fr.json` |
+| Surface           | Manifest URL | `id` |
+|-------------------|--------------|------|
+| Desktop / web app | `https://e911-plugin.voxsun.net/manifest.json` | `voxsun-e911-id` |
+| Mobile            | `https://e911-plugin.voxsun.net/manifest-mobile.json` | `voxsun-e911-mobile-id` |
 
-Each manifest is a complete, standalone document — install the one matching
-the tenant's surface and preferred language.
+Each has a distinct `id` because installing both surfaces for one tenant
+under the same `id` would collide. `manifest-fr.json` and
+`manifest-mobile-fr.json` are not installed directly — they are
+localization overlays (Teams-style, `name.short`/`name.full`/
+`description.short`/`description.full`/`staticTabs[0].name` overrides only,
+no `id` of their own) that each parent manifest's `localizationInfo.
+additionalLanguages` points at for a French-locale host.
 
 ## What this does not do
 

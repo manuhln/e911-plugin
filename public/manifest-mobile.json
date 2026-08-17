@@ -1,7 +1,7 @@
 {
   "manifestVersion": "0.1",
   "version": "0.1.0",
-  "id": "voxsun-e911-id",
+  "id": "voxsun-e911-mobile-id",
   "packageName": "com.voxsun.www.e911",
   "productType": "mobile",
   "name": { "short": "911", "full": "911 Address" },
@@ -18,7 +18,7 @@
   "localizationInfo": {
     "defaultLanguageTag": "en",
     "additionalLanguages": [
-      { "languageTag": "fr", "file": "https://e911-plugin.voxsun.net/manifest-fr.json" }
+      { "languageTag": "fr", "file": "https://e911-plugin.voxsun.net/manifest-mobile-fr.json" }
     ]
   },
   "staticTabs": [
