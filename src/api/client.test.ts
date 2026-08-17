@@ -73,14 +73,49 @@ test('422 carries corrected, alternatives and civic_status through', async () =>
   assert.equal(result.civicStatus?.msag_status, 'NOTFOUND');
 });
 
-test('400 carries field and missing through', async () => {
+test('400 from field normalisation carries field through', async () => {
+  // Real shape: e911_api.py's _civic_from_payload rejects an unrecognized
+  // state/country with `field`, never `missing`.
   const client = createClient(SESSION, 'https://intranet.test',
-    stubFetch(400, { success: false, code: 400, field: 'state', missing: ['street'] }));
+    stubFetch(400, { success: false, code: 400, field: 'state',
+                     message: "Unrecognized state/province: 'Nowhere'" }));
   const result = await client.submitLocation({});
   assert.equal(result.ok, false);
   if (result.ok) return;
   assert.equal(result.field, 'state');
-  assert.deepEqual(result.missing, ['street']);
+  assert.equal(result.missing, undefined);
+});
+
+test('400 from missing required fields carries missing through', async () => {
+  // Real shape: agent.py's _e911_missing_fields rejects an incomplete
+  // address with `missing`, never `field`.
+  const client = createClient(SESSION, 'https://intranet.test',
+    stubFetch(400, { success: false, code: 400, missing: ['Street', 'City'],
+                     message: 'Incomplete civic address: Street, City' }));
+  const result = await client.submitLocation({});
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.deepEqual(result.missing, ['Street', 'City']);
+  assert.equal(result.field, undefined);
+});
+
+test('unchanged carries its top-level status fields through, not nested', async () => {
+  // _e911_apply_location's unchanged branch is the odd one out: routing_status,
+  // msag_status and last_synced sit at the top level, not under civic_status.
+  const client = createClient(SESSION, 'https://intranet.test',
+    stubFetch(200, {
+      success: true, unchanged: true, did: '+15144704047', erl_id: 'erl-9',
+      routing_status: 'ROUTABLE', msag_status: 'PASSED',
+      last_synced: '2026-08-01T00:00:00',
+      message: 'Address already provisioned; no change sent to Intrado.',
+    }));
+  const result = await client.submitLocation({ dry_run: false });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.data.unchanged, true);
+  assert.equal(result.data.routing_status, 'ROUTABLE');
+  assert.equal(result.data.msag_status, 'PASSED');
+  assert.equal(result.data.last_synced, '2026-08-01T00:00:00');
 });
 
 test('a network failure becomes a result, not a rejection', async () => {

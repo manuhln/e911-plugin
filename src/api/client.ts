@@ -15,20 +15,28 @@ const BASE_PATH = '/api/wazo/e911/me';
 export function createClient(session: Session, baseUrl: string, fetchImpl: typeof fetch = fetch) {
   const root = String(baseUrl || '').replace(/\/+$/, '');
 
-  async function call<T>(path: string, init: RequestInit = {}): Promise<ApiResult<T>> {
+  async function call<T>(
+    path: string,
+    options: { method?: string; json?: unknown } = {},
+  ): Promise<ApiResult<T>> {
     let response: Response;
     try {
+      // JSON.stringify lives inside this try too: a payload that can't be
+      // serialised must become a result like every other failure, not an
+      // exception that breaks the never-throws guarantee.
+      const body = 'json' in options ? JSON.stringify(options.json) : undefined;
       response = await fetchImpl(root + BASE_PATH + path, {
-        ...init,
+        method: options.method,
+        body,
         headers: {
-          ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+          ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
           'X-Auth-Token': session.token,
           'X-Wazo-Host': session.host,
-          ...(init.headers as Record<string, string> | undefined),
         },
       });
     } catch {
-      // Offline, DNS failure, CORS rejection. status 0 means "never got there".
+      // Offline, DNS failure, CORS rejection, or a payload that couldn't be
+      // serialised. status 0 means "never got there".
       return { ok: false, status: 0 };
     }
 
@@ -60,7 +68,7 @@ export function createClient(session: Session, baseUrl: string, fetchImpl: typeo
   return {
     getMe: () => call<MeResponse>(''),
     submitLocation: (payload: SubmitPayload) =>
-      call<LocationResponse>('/location', { method: 'POST', body: JSON.stringify(payload) }),
+      call<LocationResponse>('/location', { method: 'POST', json: payload }),
     confirm: () => call<ConfirmResponse>('/confirm', { method: 'POST' }),
     deleteSavedLocation: (id: number) =>
       call<{ success: true }>('/locations/' + encodeURIComponent(String(id)), { method: 'DELETE' }),

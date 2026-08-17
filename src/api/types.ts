@@ -41,6 +41,17 @@ export interface LocationResponse {
   civic_status?: CivicStatus;
   corrected?: Civic | null;
   message?: string;
+  /** Per-subscriber attach detail on a full provision; plural sibling of `message`. */
+  messages?: string[];
+  /**
+   * The `unchanged: true` branch is the odd one out: `_e911_apply_location`
+   * puts these at the top level there instead of nesting them under
+   * `civic_status` like every other branch. Do not "tidy" them into
+   * `civic_status` -- that's not what the backend sends on this branch.
+   */
+  routing_status?: string | null;
+  msag_status?: string | null;
+  last_synced?: string | null;
 }
 
 export interface ConfirmResponse {
