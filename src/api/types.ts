@@ -15,6 +15,21 @@ export interface SavedLocation {
   address: Civic;
 }
 
+export interface Choice {
+  code: string;
+  name: string;
+}
+
+/**
+ * The only countries and provinces/states Intrado will accept, sent by the
+ * backend so the form can offer them instead of asking the user to spell
+ * "Québec". `regions` is keyed by country code.
+ */
+export interface AddressChoices {
+  countries: Choice[];
+  regions: Record<string, Choice[]>;
+}
+
 export interface CivicStatus {
   routing_status?: string | null;
   msag_status?: string | null;
@@ -24,6 +39,12 @@ export interface CivicStatus {
 export interface MeResponse {
   success: true;
   identity: { mode: string; label: string };
+  /**
+   * Optional: this plugin ships separately from voxnet, so a backend that
+   * predates the dropdowns sends nothing here and the form falls back to
+   * text inputs. Do not make this required.
+   */
+  choices?: AddressChoices;
   needs_confirmation: boolean;
   address: Civic | null;
   status: string | null;

@@ -21,6 +21,7 @@
   "form.state": "Province ou état",
   "form.postalCode": "Code postal",
   "form.country": "Pays",
+  "form.choose": "Choisissez…",
   "form.check": "Vérifier cette adresse",
   "form.cancel": "Annuler",
   "form.saveAs": "Mémoriser cette adresse sous",

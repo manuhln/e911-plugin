@@ -21,6 +21,7 @@
   "form.state": "Province or state",
   "form.postalCode": "Postal or ZIP code",
   "form.country": "Country",
+  "form.choose": "Choose…",
   "form.check": "Check this address",
   "form.cancel": "Cancel",
   "form.saveAs": "Remember this address as",

@@ -252,6 +252,7 @@ export default function App({ session }: { session: Session }) {
           <AddressForm
             key={JSON.stringify(submitted ?? me?.address ?? null)}
             initial={submitted ?? me?.address ?? null}
+            choices={me?.choices ?? null}
             busy={busy}
             onCheck={onCheck}
             onCancel={me?.address ? () => { setEditing(false); setFail(null); } : null}
