@@ -3,6 +3,7 @@ import type { WDASession } from '@wazo/euc-plugins-sdk/types';
 
 import { createClient } from './api/client.ts';
 import { MESSAGES, resolveLocale } from './locale/index.ts';
+import { isDetached } from './screen.ts';
 
 /**
  * Raise the "did you move" prompt without the user opening the tab.
@@ -39,7 +40,10 @@ async function check() {
     const result = await client.getMe();
     if (!result.ok) return;
 
-    if (!result.data.needs_confirmation) {
+    // A detached user (said they moved, or a save failed) has no 911 address
+    // until they add one: remind them like a stale one.
+    const detached = isDetached(result.data.status);
+    if (!result.data.needs_confirmation && !detached) {
       modalShown = false;   // a later move prompts again
       // The nudge from a previous check must not outlive the thing it was
       // nudging about, or the user learns to ignore a badge that never
@@ -55,7 +59,7 @@ async function check() {
 
     const locale = resolveLocale(context.app?.locale);
     const title = MESSAGES[locale]['app.title'];
-    const text = MESSAGES[locale]['status.movedTitle'];
+    const text = MESSAGES[locale][detached ? 'detached.title' : 'status.movedTitle'];
 
     // Badge and notification are independent host capabilities that vary by
     // surface (desktop vs. mobile). Guard each on its own so a host missing
