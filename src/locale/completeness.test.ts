@@ -70,7 +70,7 @@ test('no French value is byte-identical to its English counterpart', () => {
 });
 
 test('the detached card keys exist and are non-empty in both locales', () => {
-  for (const key of ['detached.title', 'detached.body', 'detached.enter', 'detached.back']) {
+  for (const key of ['detached.title', 'detached.body', 'detached.enter', 'detached.back', 'prompt.openTab']) {
     assert.ok(en[key], 'en.json is missing ' + key);
     assert.ok(fr[key], 'fr.json is missing ' + key);
   }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
+import { app } from '@wazo/euc-plugins-sdk';
 
 import { createClient, type E911Client } from './api/client.ts';
 import type {
@@ -11,7 +12,7 @@ import AddressForm from './components/AddressForm.tsx';
 import ValidationResult from './components/ValidationResult.tsx';
 import SavedLocations from './components/SavedLocations.tsx';
 
-export default function App({ session }: { session: Session }) {
+export default function App({ session, prompt = false }: { session: Session; prompt?: boolean }) {
   const intl = useIntl();
   const [client] = useState<E911Client>(() =>
     createClient(session, import.meta.env.VITE_API_URL ?? ''));
@@ -56,11 +57,17 @@ export default function App({ session }: { session: Session }) {
   // this backend, so building UI against it would be a guess.
   const suggested = fail?.corrected ?? null;
 
+  // In the modal, a finished action closes it; there is nothing else to do there.
+  function closeIfPrompt() {
+    if (!prompt) return;
+    try { app.removeModal(); } catch { /* not in a modal */ }
+  }
+
   async function onStillHere() {
     setBusy(true);
     const result = await client.confirm();
     setBusy(false);
-    if (result.ok) { await load(); return; }
+    if (result.ok) { await load(); closeIfPrompt(); return; }
     setFail(result);
   }
 
@@ -152,6 +159,7 @@ export default function App({ session }: { session: Session }) {
     setEditing(false);
     setSavedInFlight(null);
     void load();
+    closeIfPrompt();
   }
 
   const addressLines = (civic: Civic) => (
@@ -165,7 +173,7 @@ export default function App({ session }: { session: Session }) {
 
   return (
     <main className="e911">
-      <h1 className="e911-title"><FormattedMessage id="app.title" /></h1>
+      {!prompt && <h1 className="e911-title"><FormattedMessage id="app.title" /></h1>}
 
       {fail && screen !== 'no_identity' && screen !== 'unavailable' && (
         <Message messageKey={messageKeyFor(fail)} severity={severityFor(fail)} />

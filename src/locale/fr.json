@@ -64,5 +64,6 @@
   "detached.body": "Votre adresse précédente a été retirée. Tant que vous n'aurez pas ajouté la nouvelle, un appel au 911 sera pris par un centre d'appels d'urgence qui vous demandera où vous êtes.",
   "detached.enter": "Entrer mon adresse",
   "detached.back": "Je suis de retour à cette adresse",
-  "error.saveFailedDetached": "Nous n'avons pas pu enregistrer votre nouvelle adresse. D'ici là, un appel au 911 sera pris par un centre d'appels d'urgence qui vous demandera où vous êtes. Réessayez dans quelques minutes."
+  "error.saveFailedDetached": "Nous n'avons pas pu enregistrer votre nouvelle adresse. D'ici là, un appel au 911 sera pris par un centre d'appels d'urgence qui vous demandera où vous êtes. Réessayez dans quelques minutes.",
+  "prompt.openTab": "Votre adresse 911 doit être vérifiée. Ouvrez l'onglet Adresse 911 pour la confirmer ou la modifier."
 }

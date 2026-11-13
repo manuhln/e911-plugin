@@ -12,6 +12,8 @@ import { selectBootScreen } from './boot.ts';
 import Message from './components/Message.tsx';
 import './styles.css';
 
+const PROMPT_VIEW = new URLSearchParams(window.location.search).get('view') === 'prompt';
+
 function Root() {
   const [session, setSession] = useState<Session | null>(null);
   const [locale, setLocale] = useState(DEFAULT_LOCALE);
@@ -81,20 +83,26 @@ function Root() {
   return (
     <IntlProvider locale={locale} defaultLocale={DEFAULT_LOCALE} messages={MESSAGES[locale]}>
       {boot === 'ready' && session
-        ? <App session={session} />
+        ? <App session={session} prompt={PROMPT_VIEW} />
         : (
           <main className="e911">
             {boot === 'error'
-              ? (
-                <section className="e911-card">
-                  <Message messageKey="error.startup" severity="error" />
-                  <div className="e911-actions">
-                    <button type="button" onClick={() => void onRetry()}>
-                      <FormattedMessage id="action.retry" />
-                    </button>
-                  </div>
-                </section>
-              )
+              ? (PROMPT_VIEW
+                ? (
+                  <section className="e911-card">
+                    <p><FormattedMessage id="prompt.openTab" /></p>
+                  </section>
+                )
+                : (
+                  <section className="e911-card">
+                    <Message messageKey="error.startup" severity="error" />
+                    <div className="e911-actions">
+                      <button type="button" onClick={() => void onRetry()}>
+                        <FormattedMessage id="action.retry" />
+                      </button>
+                    </div>
+                  </section>
+                ))
               : <p>{MESSAGES[locale]['app.loading']}</p>}
           </main>
         )}

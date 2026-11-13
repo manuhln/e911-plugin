@@ -18,6 +18,7 @@ npm test         # node --test over src/**/*.test.ts
 Copy `.env.example` to `.env` and set:
 
 - `VITE_API_URL` — base URL of the intranet E911 API, no trailing slash.
+- `VITE_PLUGIN_URL` — the plugin's own public base URL, no trailing slash. The background script opens `app.html?view=prompt` from it in a modal when the user may have moved. Unset: no modal, badge and notification only.
 
 **`VITE_API_URL` is inlined into the bundle at build time, not read at
 runtime.** Vite substitutes it into `app.js` and `background.js` when

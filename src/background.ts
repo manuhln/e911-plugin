@@ -65,6 +65,21 @@ async function check() {
     } catch {
       // No notification support on this surface.
     }
+    // Notifications can't carry buttons or open our tab (SDK 0.0.19-1.1.1),
+    // so the buttons live in our own page, shown as a modal.
+    const pluginUrl = import.meta.env.VITE_PLUGIN_URL;
+    if (pluginUrl) {
+      try {
+        app.displayModal({
+          url: String(pluginUrl).replace(/\/+$/, '') + '/app.html?view=prompt',
+          title,
+          height: 420,
+          width: 420,
+        });
+      } catch {
+        // No modal support on this surface; the badge and notification remain.
+      }
+    }
   } catch {
     // Swallow everything. This script has no UI to report to, and its only
     // job is an optional nudge -- never worth disturbing the host app over.
