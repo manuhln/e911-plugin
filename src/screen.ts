@@ -1,7 +1,7 @@
 import type { ApiFail, ApiResult, LocationResponse, MeResponse } from './api/types.ts';
 
 export type Screen =
-  | 'loading' | 'unavailable' | 'no_identity' | 'needs_confirmation'
+  | 'loading' | 'unavailable' | 'no_identity' | 'needs_confirmation' | 'detached'
   | 'confirmed' | 'form' | 'validated' | 'done';
 
 export type Severity = 'error' | 'warning' | 'info';
@@ -55,12 +55,14 @@ export function selectScreen(state: ScreenInput): Screen {
 
   if (!state.me) return 'unavailable';
   if (state.me.address === null) return 'form';
+  if (isDetached(state.me.status)) return 'detached';
   if (state.me.needs_confirmation) return 'needs_confirmation';
   return 'confirmed';
 }
 
 /** An i18n key. Backend prose is never shown to the user directly. */
 export function messageKeyFor(fail: ApiFail): string {
+  if (fail.detached) return 'error.saveFailedDetached';
   if (fail.status === 0) return 'error.offline';
   if (fail.status === 401) return 'error.session';
   if (fail.status === 503) return 'error.unconfigured';
@@ -102,4 +104,9 @@ export function severityFor(fail: ApiFail): Severity {
  */
 export function isAddressProvisioned(status: string | null): boolean {
   return status === 'provisioned';
+}
+
+/** No address at Intrado for this user right now: 911 goes to the call center. */
+export function isDetached(status: string | null): boolean {
+  return status === 'detached' || status === 'detach_pending';
 }

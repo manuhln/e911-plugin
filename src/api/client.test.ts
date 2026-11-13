@@ -162,3 +162,25 @@ test('deleteSavedLocation uses DELETE and puts the id in the path', async () => 
   assert.equal(capture.calls[0].url, 'https://intranet.test/api/wazo/e911/me/locations/7');
   assert.equal(capture.calls[0].init.method, 'DELETE');
 });
+
+test('moved() POSTs to /me/moved with the auth headers', async () => {
+  const capture = { calls: [] as any[] };
+  const client = createClient(SESSION, 'https://intranet.test',
+    stubFetch(200, { success: true, status: 'detached' }, capture));
+  const result = await client.moved();
+  assert.equal(result.ok, true);
+  const { url, init } = capture.calls[0];
+  assert.equal(url, 'https://intranet.test/api/wazo/e911/me/moved');
+  assert.equal(init.method, 'POST');
+  assert.equal(init.headers['X-Auth-Token'], 'tok-abc');
+  assert.equal(init.headers['X-Wazo-Host'], 'node10.voxsun.net');
+});
+
+test('a failed save that detached carries detached: true', async () => {
+  const client = createClient(SESSION, 'https://intranet.test',
+    stubFetch(502, { success: false, detached: true }));
+  const result = await client.submitLocation({ dry_run: false });
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.detached, true);
+});

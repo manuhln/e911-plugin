@@ -48,7 +48,7 @@
   "error.offline": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
   "error.session": "Votre session n'a pas pu être vérifiée. Rechargez l'application.",
   "error.unconfigured": "La gestion autonome du 911 n'est pas encore activée. Contactez votre administrateur.",
-  "error.upstream": "Impossible de joindre le fournisseur 911. L'adresse actuellement enregistrée est incertaine — réessayez ou contactez le soutien technique.",
+  "error.upstream": "Impossible de joindre le fournisseur 911. Réessayez dans quelques minutes.",
   "error.notfound": "Cette adresse enregistrée n'existe plus.",
   "error.noIdentity": "Votre compte n'est pas configuré pour la gestion autonome du 911. Contactez votre administrateur.",
   "error.noAddress": "Aucune adresse n'est enregistrée pour le moment.",
@@ -59,5 +59,10 @@
   "error.notInMsag": "Les services d'urgence ne reconnaissent pas cette adresse. Vérifiez-la ou contactez le soutien technique.",
   "error.rejected": "Cette adresse a été refusée. Vérifiez-la et réessayez.",
   "error.conflict": "Cette action est impossible pour le moment.",
-  "error.unknown": "Une erreur est survenue. Réessayez."
+  "error.unknown": "Une erreur est survenue. Réessayez.",
+  "detached.title": "Aucune adresse 911 enregistrée",
+  "detached.body": "Votre adresse précédente a été retirée. Tant que vous n'aurez pas ajouté la nouvelle, un appel au 911 sera pris par un centre d'appels d'urgence qui vous demandera où vous êtes.",
+  "detached.enter": "Entrer mon adresse",
+  "detached.back": "Je suis de retour à cette adresse",
+  "error.saveFailedDetached": "Nous n'avons pas pu enregistrer votre nouvelle adresse. D'ici là, un appel au 911 sera pris par un centre d'appels d'urgence qui vous demandera où vous êtes. Réessayez dans quelques minutes."
 }

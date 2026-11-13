@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { isAddressProvisioned, messageKeyFor, selectScreen, severityFor } from './screen.ts';
+import { isAddressProvisioned, isDetached, messageKeyFor, selectScreen, severityFor } from './screen.ts';
 import type { ApiFail } from './api/types.ts';
 
 const base = {
@@ -135,4 +135,32 @@ test('isAddressProvisioned is true only for a status of exactly "provisioned"', 
   assert.equal(isAddressProvisioned('validate_only'), false);
   assert.equal(isAddressProvisioned('error'), false);
   assert.equal(isAddressProvisioned(null), false);
+});
+
+test('detached and detach_pending show the detached card', () => {
+  for (const status of ['detached', 'detach_pending']) {
+    assert.equal(selectScreen({ ...base, me: me({ status }) }), 'detached');
+  }
+});
+
+test('the detached card outranks the move prompt', () => {
+  assert.equal(
+    selectScreen({ ...base, me: me({ status: 'detached', needs_confirmation: true }) }),
+    'detached');
+});
+
+test('editing from the detached card opens the form', () => {
+  assert.equal(selectScreen({ ...base, editing: true, me: me({ status: 'detached' }) }), 'form');
+});
+
+test('isDetached', () => {
+  assert.equal(isDetached('detached'), true);
+  assert.equal(isDetached('detach_pending'), true);
+  assert.equal(isDetached('provisioned'), false);
+  assert.equal(isDetached(null), false);
+});
+
+test('a failed save that detached says where 911 goes now', () => {
+  assert.equal(messageKeyFor({ ok: false, status: 502, detached: true }), 'error.saveFailedDetached');
+  assert.equal(messageKeyFor({ ok: false, status: 422, detached: true }), 'error.saveFailedDetached');
 });

@@ -81,6 +81,11 @@ export interface ConfirmResponse {
   message?: string;
 }
 
+export interface MovedResponse {
+  success: true;
+  status: string | null;
+}
+
 /** Everything the backend can say when it refuses. */
 export interface ApiFail {
   ok: false;
@@ -91,6 +96,8 @@ export interface ApiFail {
   missing?: string[];
   corrected?: Civic | null;
   alternatives?: unknown;
+  /** A failed save also took the old address off the user (backend detach). */
+  detached?: boolean;
   civicStatus?: CivicStatus;
   /** Backend prose. Diagnostics only -- the UI shows a translated key instead. */
   message?: string;

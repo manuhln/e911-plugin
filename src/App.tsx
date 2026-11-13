@@ -62,6 +62,17 @@ export default function App({ session }: { session: Session }) {
     setFail(result);
   }
 
+  async function onMoved() {
+    setBusy(true);
+    const result = await client.moved();
+    setBusy(false);
+    // Open the form whatever the answer: the user still needs to give their
+    // new address, and the banner explains a failure.
+    setFail(result.ok ? null : result);
+    setEditing(true);
+    await load(true);
+  }
+
   async function onCheck(civic: Civic, label: string) {
     setBusy(true);
     setSubmitted(civic);
@@ -183,7 +194,7 @@ export default function App({ session }: { session: Session }) {
         </section>
       )}
 
-      {(screen === 'needs_confirmation' || screen === 'form') && !!me?.saved_locations.length && (
+      {(screen === 'needs_confirmation' || screen === 'form' || screen === 'detached') && !!me?.saved_locations.length && (
         <SavedLocations
           locations={me.saved_locations}
           busy={busy}
@@ -204,10 +215,32 @@ export default function App({ session }: { session: Session }) {
             <button type="button" disabled={busy} onClick={() => void onStillHere()}>
               <FormattedMessage id="status.stillHere" />
             </button>
-            <button type="button" disabled={busy} onClick={() => setEditing(true)}>
+            <button type="button" disabled={busy} onClick={() => void onMoved()}>
               <FormattedMessage id="status.iMoved" />
             </button>
           </div>
+        </section>
+      )}
+
+      {screen === 'detached' && (
+        <section className="e911-card e911-card--warn">
+          <h2><FormattedMessage id="detached.title" /></h2>
+          <p><FormattedMessage id="detached.body" /></p>
+          <div className="e911-actions">
+            <button type="button" disabled={busy} onClick={() => setEditing(true)}>
+              <FormattedMessage id="detached.enter" />
+            </button>
+          </div>
+          {me?.address && (
+            <>
+              {addressLines(me.address)}
+              <div className="e911-actions">
+                <button type="button" disabled={busy} onClick={() => void onStillHere()}>
+                  <FormattedMessage id="detached.back" />
+                </button>
+              </div>
+            </>
+          )}
         </section>
       )}
 

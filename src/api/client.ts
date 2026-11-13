@@ -1,5 +1,5 @@
 import type {
-  ApiFail, ApiResult, ConfirmResponse, LocationResponse, MeResponse,
+  ApiFail, ApiResult, ConfirmResponse, LocationResponse, MeResponse, MovedResponse,
   Session, SubmitPayload,
 } from './types.ts';
 
@@ -60,6 +60,7 @@ export function createClient(session: Session, baseUrl: string, fetchImpl: typeo
       if (body.corrected !== undefined) fail.corrected = body.corrected;
       if (body.alternatives !== undefined) fail.alternatives = body.alternatives;
       if (body.civic_status) fail.civicStatus = body.civic_status;
+      if (body.detached) fail.detached = true;
       if (body.message) fail.message = body.message;
     }
     return fail;
@@ -70,6 +71,7 @@ export function createClient(session: Session, baseUrl: string, fetchImpl: typeo
     submitLocation: (payload: SubmitPayload) =>
       call<LocationResponse>('/location', { method: 'POST', json: payload }),
     confirm: () => call<ConfirmResponse>('/confirm', { method: 'POST' }),
+    moved: () => call<MovedResponse>('/moved', { method: 'POST' }),
     deleteSavedLocation: (id: number) =>
       call<{ success: true }>('/locations/' + encodeURIComponent(String(id)), { method: 'DELETE' }),
   };

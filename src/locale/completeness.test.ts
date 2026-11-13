@@ -31,6 +31,7 @@ const SAMPLE_FAILS: ApiFail[] = [
   { ok: false, status: 422, civicStatus: { msag_status: 'NOTFOUND' } },
   { ok: false, status: 422 },
   { ok: false, status: 418 }, // anything unmapped
+  { ok: false, status: 502, detached: true },
 ];
 
 export const REQUIRED_MESSAGE_KEYS = Array.from(new Set(SAMPLE_FAILS.map(messageKeyFor)));
@@ -42,8 +43,8 @@ function loadLocale(path: URL): Record<string, string> {
 const en = loadLocale(new URL('./en.json', import.meta.url));
 const fr = loadLocale(new URL('./fr.json', import.meta.url));
 
-test('messageKeyFor produces exactly the 15 known keys', () => {
-  assert.equal(REQUIRED_MESSAGE_KEYS.length, 15);
+test('messageKeyFor produces exactly the 16 known keys', () => {
+  assert.equal(REQUIRED_MESSAGE_KEYS.length, 16);
 });
 
 test('every messageKeyFor key exists in en.json', () => {
@@ -65,5 +66,12 @@ test('en.json and fr.json declare the identical set of keys', () => {
 test('no French value is byte-identical to its English counterpart', () => {
   for (const key of Object.keys(en)) {
     assert.notEqual(fr[key], en[key], 'fr.json key "' + key + '" looks untranslated');
+  }
+});
+
+test('the detached card keys exist and are non-empty in both locales', () => {
+  for (const key of ['detached.title', 'detached.body', 'detached.enter', 'detached.back']) {
+    assert.ok(en[key], 'en.json is missing ' + key);
+    assert.ok(fr[key], 'fr.json is missing ' + key);
   }
 });
