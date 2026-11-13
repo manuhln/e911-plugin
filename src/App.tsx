@@ -35,10 +35,12 @@ export default function App({ session }: { session: Session }) {
   // other than the initial mount (e.g. removing a saved address) must not
   // unmount whatever the user is currently looking at -- notably the address
   // form, which would otherwise wipe every field they'd typed (Finding 7).
-  const load = useCallback(async (background = false) => {
+  // `keepFail` leaves the current failure banner alone on a successful
+  // reload: a failed action's error must outlive the refresh that follows it.
+  const load = useCallback(async (background = false, keepFail = false) => {
     if (!background) setLoading(true);
     const result = await client.getMe();
-    if (result.ok) { setMe(result.data); setFail(null); } else { setFail(result); }
+    if (result.ok) { setMe(result.data); if (!keepFail) setFail(null); } else { setFail(result); }
     if (!background) setLoading(false);
   }, [client]);
 
@@ -67,10 +69,12 @@ export default function App({ session }: { session: Session }) {
     const result = await client.moved();
     setBusy(false);
     // Open the form whatever the answer: the user still needs to give their
-    // new address, and the banner explains a failure.
+    // new address, and the banner explains a failure. (A failure meaning we
+    // can't serve the user at all -- 401/503/offline -- still wins and shows
+    // the unavailable screen.) The reload keeps the failure so it stays visible.
     setFail(result.ok ? null : result);
     setEditing(true);
-    await load(true);
+    await load(true, true);
   }
 
   async function onCheck(civic: Civic, label: string) {
@@ -109,7 +113,7 @@ export default function App({ session }: { session: Session }) {
     // (e.g. Intrado accepted the new location but attaching a subscriber to
     // it failed) -- reload so the screen reflects whatever the server now
     // holds instead of the address from before this attempt (Finding 5).
-    await load();
+    await load(false, true);
   }
 
   async function onUseSaved(location: SavedLocation) {
