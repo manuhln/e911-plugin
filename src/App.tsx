@@ -63,6 +63,13 @@ export default function App({ session, prompt = false }: { session: Session; pro
     try { app.removeModal(); } catch { /* not in a modal */ }
   }
 
+  // ponytail: SDK 0.0.19 has no "open tab" call. openLink just hands the URL
+  // to the host; whether it routes in-app to our tab is untested.
+  function openTab() {
+    try { app.openLink('/custom/tab/general/e911'); } catch { /* no host */ }
+    closeIfPrompt();
+  }
+
   async function onStillHere() {
     setBusy(true);
     const result = await client.confirm();
@@ -174,10 +181,10 @@ export default function App({ session, prompt = false }: { session: Session; pro
   );
 
   // The modal: the host draws it far shorter than requested, so only the
-  // notification's title and the buttons. "Update my address" switches to
-  // the full layout below (saved addresses + form) and lets it scroll.
-  if (prompt && screen !== 'form' && screen !== 'validated' && screen !== 'done') {
-    const detached = screen === 'detached';
+  // notification's title and the buttons. The address itself is entered in
+  // the tab, where the user sees what they're registering.
+  if (prompt) {
+    const detached = screen === 'detached' || screen === 'form';   // form = no address at all
     return (
       <main className="e911 e911--prompt">
         {screen === 'loading' && <p><FormattedMessage id="app.loading" /></p>}
@@ -197,7 +204,7 @@ export default function App({ session, prompt = false }: { session: Session; pro
         )}
         {detached && (
           <div className="e911-actions">
-            <button type="button" disabled={busy} onClick={() => { setFail(null); setEditing(true); }}>
+            <button type="button" disabled={busy} onClick={openTab}>
               <FormattedMessage id="prompt.update" />
             </button>
           </div>
