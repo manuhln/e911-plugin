@@ -206,7 +206,9 @@ export default function App({ session, prompt = false }: { session: Session; pro
         </section>
       )}
 
-      {(screen === 'needs_confirmation' || screen === 'form' || screen === 'detached') && !!me?.saved_locations.length && (
+      {/* Not in the modal: the host shows it far shorter than asked, and this
+          list would push the action buttons out of sight. The tab has it. */}
+      {!prompt && (screen === 'needs_confirmation' || screen === 'form' || screen === 'detached') && !!me?.saved_locations.length && (
         <SavedLocations
           locations={me.saved_locations}
           busy={busy}
