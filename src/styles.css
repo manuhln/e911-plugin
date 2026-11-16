@@ -185,3 +185,9 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   color: var(--e911-danger);
   text-decoration: underline;
 }
+
+/* The host draws the modal far shorter than requested: keep it to a title,
+   at most one line and the buttons. */
+.e911--prompt { padding: .5rem .75rem; gap: .5rem; }
+.e911--prompt h2 { font-size: 1.05rem; margin: 0; }
+.e911--prompt p { margin: 0; }

@@ -80,7 +80,9 @@ export default function App({ session, prompt = false }: { session: Session; pro
     // can't serve the user at all -- 401/503/offline -- still wins and shows
     // the unavailable screen.) The reload keeps the failure so it stays visible.
     setFail(result.ok ? null : result);
-    setEditing(true);
+    // The modal has no room for the form: it lands on the detached view,
+    // which points the user to the tab.
+    if (!prompt) setEditing(true);
     await load(true, true);
   }
 
@@ -171,9 +173,47 @@ export default function App({ session, prompt = false }: { session: Session; pro
     </address>
   );
 
+  // The modal: the host draws it far shorter than requested, so only the
+  // notification's title, at most one line, and the buttons. Everything
+  // else (address, saved addresses, form) lives in the tab.
+  if (prompt) {
+    const detached = screen === 'detached';
+    return (
+      <main className="e911 e911--prompt">
+        {screen === 'loading' && <p><FormattedMessage id="app.loading" /></p>}
+        {(screen === 'needs_confirmation' || detached) && (
+          <h2><FormattedMessage id={detached ? 'detached.title' : 'status.movedTitle'} /></h2>
+        )}
+        {fail
+          ? <Message messageKey={messageKeyFor(fail)} severity={severityFor(fail)} />
+          : detached && <p><FormattedMessage id="prompt.addInTab" /></p>}
+        {screen === 'needs_confirmation' && (
+          <div className="e911-actions">
+            <button type="button" disabled={busy} onClick={() => void onStillHere()}>
+              <FormattedMessage id="status.stillHere" />
+            </button>
+            <button type="button" disabled={busy} onClick={() => void onMoved()}>
+              <FormattedMessage id="status.iMoved" />
+            </button>
+          </div>
+        )}
+        {detached && me?.address && (
+          <div className="e911-actions">
+            <button type="button" disabled={busy} onClick={() => void onStillHere()}>
+              <FormattedMessage id="prompt.back" />
+            </button>
+          </div>
+        )}
+        {screen !== 'loading' && screen !== 'needs_confirmation' && !detached && !fail && (
+          <p><FormattedMessage id="prompt.openTab" /></p>
+        )}
+      </main>
+    );
+  }
+
   return (
     <main className="e911">
-      {!prompt && <h1 className="e911-title"><FormattedMessage id="app.title" /></h1>}
+      <h1 className="e911-title"><FormattedMessage id="app.title" /></h1>
 
       {fail && screen !== 'no_identity' && screen !== 'unavailable' && (
         <Message messageKey={messageKeyFor(fail)} severity={severityFor(fail)} />
@@ -206,9 +246,7 @@ export default function App({ session, prompt = false }: { session: Session; pro
         </section>
       )}
 
-      {/* Not in the modal: the host shows it far shorter than asked, and this
-          list would push the action buttons out of sight. The tab has it. */}
-      {!prompt && (screen === 'needs_confirmation' || screen === 'form' || screen === 'detached') && !!me?.saved_locations.length && (
+      {(screen === 'needs_confirmation' || screen === 'form' || screen === 'detached') && !!me?.saved_locations.length && (
         <SavedLocations
           locations={me.saved_locations}
           busy={busy}
