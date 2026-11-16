@@ -174,9 +174,9 @@ export default function App({ session, prompt = false }: { session: Session; pro
   );
 
   // The modal: the host draws it far shorter than requested, so only the
-  // notification's title, at most one line, and the buttons. Everything
-  // else (address, saved addresses, form) lives in the tab.
-  if (prompt) {
+  // notification's title and the buttons. "Update my address" switches to
+  // the full layout below (saved addresses + form) and lets it scroll.
+  if (prompt && screen !== 'form' && screen !== 'validated' && screen !== 'done') {
     const detached = screen === 'detached';
     return (
       <main className="e911 e911--prompt">
@@ -184,9 +184,7 @@ export default function App({ session, prompt = false }: { session: Session; pro
         {(screen === 'needs_confirmation' || detached) && (
           <h2><FormattedMessage id={detached ? 'detached.title' : 'status.movedTitle'} /></h2>
         )}
-        {fail
-          ? <Message messageKey={messageKeyFor(fail)} severity={severityFor(fail)} />
-          : detached && <p><FormattedMessage id="prompt.addInTab" /></p>}
+        {fail && <Message messageKey={messageKeyFor(fail)} severity={severityFor(fail)} />}
         {screen === 'needs_confirmation' && (
           <div className="e911-actions">
             <button type="button" disabled={busy} onClick={() => void onStillHere()}>
@@ -197,10 +195,10 @@ export default function App({ session, prompt = false }: { session: Session; pro
             </button>
           </div>
         )}
-        {detached && me?.address && (
+        {detached && (
           <div className="e911-actions">
-            <button type="button" disabled={busy} onClick={() => void onStillHere()}>
-              <FormattedMessage id="prompt.back" />
+            <button type="button" disabled={busy} onClick={() => { setFail(null); setEditing(true); }}>
+              <FormattedMessage id="prompt.update" />
             </button>
           </div>
         )}

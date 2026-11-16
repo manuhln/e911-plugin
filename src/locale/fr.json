@@ -66,6 +66,5 @@
   "detached.back": "Je suis de retour à cette adresse",
   "error.saveFailedDetached": "Nous n'avons pas pu enregistrer votre nouvelle adresse. D'ici là, un appel au 911 sera pris par un centre d'appels d'urgence qui vous demandera où vous êtes. Réessayez dans quelques minutes.",
   "prompt.openTab": "Votre adresse 911 doit être vérifiée. Ouvrez l'onglet Adresse 911 pour la confirmer ou la modifier.",
-  "prompt.back": "Je suis de retour à mon adresse précédente",
-  "prompt.addInTab": "Ouvrez l'onglet Adresse 911 pour ajouter votre nouvelle adresse."
+  "prompt.update": "Mettre à jour mon adresse"
 }

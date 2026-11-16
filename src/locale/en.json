@@ -66,6 +66,5 @@
   "detached.back": "I'm back at this address",
   "error.saveFailedDetached": "We couldn't register your new address. Until it's fixed, a 911 call goes to an emergency call center operator who will ask where you are. Try again in a few minutes.",
   "prompt.openTab": "Your 911 address needs attention. Open the 911 Address tab to confirm or update it.",
-  "prompt.back": "I'm back at my previous address",
-  "prompt.addInTab": "Open the 911 Address tab to add your new address."
+  "prompt.update": "Update my address"
 }
